@@ -10,10 +10,19 @@ impl Plugin for PlayerPlugin {
             .add_systems(OnExit(GameStates::LoadingGame), restore_sprites)
             .add_systems(
                 Update,
-                (move_player, apply_movement_damping)
+                (move_player, apply_movement_damping, collide_ball)
                     .chain()
                     .run_if(in_state(GameStates::Playing))
                     .run_if(in_state(MenuStates::Disable)),
+            )
+            // physic update
+            .add_systems(
+                PhysicsSchedule,
+                collide_ball
+                    .chain()
+                    .run_if(in_state(GameStates::Playing))
+                    .run_if(in_state(MenuStates::Disable))
+                    .in_set(NarrowPhaseSet::Update),
             )
             .add_systems(OnExit(MenuStates::Disable), pause_physics)
             .add_systems(OnEnter(MenuStates::Disable), resume_physics)
@@ -52,6 +61,7 @@ fn spawn_player(
         StateScoped(GameStates::Playing),
         Transform::from_xyz(0.0, height / 2.0, 1.0),
         Restitution::new(0.6),
+        Wall,
     ));
     commands.spawn((
         Name::new("down paddle"),
@@ -60,6 +70,7 @@ fn spawn_player(
         StateScoped(GameStates::Playing),
         Transform::from_xyz(0.0, height / 2.0 - height, 1.0),
         Restitution::new(0.6),
+        Wall,
     ));
     commands.spawn((
         Name::new("right paddle"),
@@ -68,6 +79,7 @@ fn spawn_player(
         StateScoped(GameStates::Playing),
         Transform::from_xyz(width / 2.0, 0.0, 1.0),
         Restitution::new(0.6),
+        Wall,
     ));
     commands.spawn((
         Name::new("left paddle"),
@@ -76,6 +88,7 @@ fn spawn_player(
         StateScoped(GameStates::Playing),
         Transform::from_xyz(width / 2.0 - width, 0.0, 1.0),
         Restitution::new(0.6),
+        Wall,
     ));
     // todo: центрелизовать смену состояния к примеру во время игры будут спавнится и другие объекты нужно чтобы все процессы прошли после чего и следует сменить состояние
     next_state.set(GameStates::Playing);
@@ -114,6 +127,7 @@ fn restore_sprites(
                 custom_size: Some(visual.size),
                 ..Default::default()
             },
+            Restitution::new(0.6),
             LockedAxes::ROTATION_LOCKED,
             MovementDampingFactor(0.9),
             MaxSlopeAngle(PI * 0.45), // TODO: default value
