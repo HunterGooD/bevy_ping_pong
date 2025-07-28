@@ -13,8 +13,8 @@ on:
 
 env:
   # This variable is used to name release output files.
-  GAME_EXECUTABLE_NAME: bevy_pong # TODO: rename this
-  GAME_OSX_APP_NAME: BevyPong # TODO: rename this
+  GAME_EXECUTABLE_NAME: bevy_ping_pong
+  GAME_OSX_APP_NAME: BevyPingPong
 
 permissions:
   contents: write
@@ -150,24 +150,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.GAME_EXECUTABLE_NAME }}_windows.zip
           asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ env.VERSION }}_windows.zip
-          tag: ${{ env.VERSION }}
-          overwrite: true
-      - name: Create Installer
-        if: ${{ env.BUILD_INSTALLER }}
-        shell: bash
-        continue-on-error: true
-        run: |
-          tag=${{ env.VERSION }}
-          version="${tag#v}"
-          dotnet build -p:Version=$version -c Release build/windows/installer/Installer.wixproj --output installer
-      - name: Upload installer
-        if: ${{ env.BUILD_INSTALLER && success() }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: installer/en-US/installer.msi
-          asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ env.VERSION }}_windows.msi
-          release_name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
           overwrite: true
 

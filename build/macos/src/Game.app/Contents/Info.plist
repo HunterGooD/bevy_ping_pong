@@ -5,17 +5,17 @@
         <key>CFBundleDevelopmentRegion</key>
         <string>en</string>
         <key>CFBundleDisplayName</key>
-        <string>BevyPong</string> <!-- TODO: rename this -->s
+        <string>BevyPingPong</string>
         <key>CFBundleExecutable</key>
-        <string>bevy_pong</string> <!-- TODO: rename this -->s
+        <string>bevy_ping_pong</string>
         <key>CFBundleIconFile</key>
         <string>AppIcon.icns</string>
         <key>CFBundleIdentifier</key>
-        <string>your.domain.bevy-pong</string> <!-- TODO: rename this -->s
+        <string>your.domain.bevy-ping-pong</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleName</key>
-        <string>Bevy Pong</string> <!-- TODO: rename this -->s
+        <string>Bevy Ping Pong</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleShortVersionString</key>

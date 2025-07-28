@@ -1147,25 +1147,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_platform"
-version = "0.16.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7573dc824a1b08b4c93fdbe421c53e1e8188e9ca1dd74a414455fe571facb47"
-dependencies = [
- "cfg-if",
- "critical-section",
- "foldhash",
- "getrandom 0.2.15",
- "hashbrown",
- "portable-atomic",
- "portable-atomic-util",
- "serde",
- "spin",
- "web-time",
-]
-
-[[package]]
-name = "bevy_pong"
+name = "bevy_ping_pong"
 version = "0.1.0"
 dependencies = [
  "avian2d",
@@ -1187,6 +1169,24 @@ dependencies = [
  "wasm-bindgen",
  "web-sys",
  "winit",
+]
+
+[[package]]
+name = "bevy_platform"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7573dc824a1b08b4c93fdbe421c53e1e8188e9ca1dd74a414455fe571facb47"
+dependencies = [
+ "cfg-if",
+ "critical-section",
+ "foldhash",
+ "getrandom 0.2.15",
+ "hashbrown",
+ "portable-atomic",
+ "portable-atomic-util",
+ "serde",
+ "spin",
+ "web-time",
 ]
 
 [[package]]

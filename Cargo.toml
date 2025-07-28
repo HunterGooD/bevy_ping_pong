@@ -1,5 +1,5 @@
 [package]
-name = "bevy_pong" # TODO: rename this
+name = "bevy_ping_pong"
 version = "0.1.0"
 publish = false
 authors = ["HunterGooD"]

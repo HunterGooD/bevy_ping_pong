@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-    <!-- TODO: rename  -->
-  <Package Name="BevyPong"
+  <Package Name="BevyPingPong"
            Manufacturer="HunterGooD"
            UpgradeCode="91374e02-c875-4f30-8cd9-061c8d2011be"
            Version="0.1.0"
@@ -16,7 +15,7 @@
 
     <!-- Пути установки -->
     <StandardDirectory Id="ProgramFiles6432Folder">
-      <Directory Id="INSTALLFOLDER" Name="BevyPong" />  <!-- TODO: rename  -->
+      <Directory Id="INSTALLFOLDER" Name="BevyPingPong" />
     </StandardDirectory>
 
     <!-- Минимальный UI - только выбор папки -->
@@ -30,10 +29,9 @@
       <ComponentGroupRef Id="CreditsDirectory" />
     </Feature>
 
-    <!-- TODO: rename Исполняемый файл -->
     <ComponentGroup Id="MainComponent" Directory="INSTALLFOLDER">
       <Component>
-        <File Source="..\..\..\target\dist\bevy_pong.exe" />
+        <File Source="..\..\..\target\dist\bevy_ping_pong.exe" />
       </Component>
     </ComponentGroup>
   </Package>
