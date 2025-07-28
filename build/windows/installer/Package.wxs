@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <!-- TODO: rename  -->
+  <Package Name="BevyPong"
+           Manufacturer="HunterGooD"
+           UpgradeCode="91374e02-c875-4f30-8cd9-061c8d2011be"
+           Version="0.1.0"
+           Scope="perUserOrMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Иконка -->
+    <Icon Id="icon.ico" SourceFile="..\icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+
+    <!-- Пути установки -->
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="BevyPong" />  <!-- TODO: rename  -->
+    </StandardDirectory>
+
+    <!-- Минимальный UI - только выбор папки -->
+    <UIRef Id="WixUI_InstallDir" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+    <!-- Компоненты -->
+    <Feature Id="MainProduct" Title="Main" Level="1">
+      <ComponentGroupRef Id="MainComponent" />
+      <ComponentGroupRef Id="AssetsDirectory" />
+      <ComponentGroupRef Id="CreditsDirectory" />
+    </Feature>
+
+    <!-- TODO: rename Исполняемый файл -->
+    <ComponentGroup Id="MainComponent" Directory="INSTALLFOLDER">
+      <Component>
+        <File Source="..\..\..\target\dist\bevy_pong.exe" />
+      </Component>
+    </ComponentGroup>
+  </Package>
+</Wix>
