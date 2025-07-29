@@ -1,5 +1,5 @@
-pub mod test_effect;
 pub mod explosion;
+pub mod test_effect;
 
 use crate::effects::test_effect::*;
 use crate::prelude::*;

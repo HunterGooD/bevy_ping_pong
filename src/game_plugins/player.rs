@@ -1,35 +1,43 @@
-use crate::prelude::*;
 use crate::game_plugins::ball::*;
+use crate::prelude::*;
 pub struct PlayerPlugin;
 
 /// This plugin handles player related stuff like movement
 /// Player logic is only active during the State `GameState::Playing`
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameStates::LoadingGame), (spawn_ball, spawn_player).chain())
-            .add_systems(OnExit(GameStates::LoadingGame), restore_sprites)
-            .add_systems(
-                Update,
-                (move_player, apply_movement_damping, ball_reset_check, enable_interaction_after_initial_animation)
-                    .chain()
-                    .run_if(in_state(GameStates::Playing))
-                    .run_if(in_state(MenuStates::Disable)),
+        app.add_systems(
+            OnEnter(GameStates::LoadingGame),
+            (spawn_ball, spawn_player).chain(),
+        )
+        .add_systems(OnExit(GameStates::LoadingGame), restore_sprites)
+        .add_systems(
+            Update,
+            (
+                move_player,
+                apply_movement_damping,
+                ball_reset_check,
+                enable_interaction_after_initial_animation,
             )
-            // physic update
-            .add_systems(
-                PhysicsSchedule,
-                collide_ball
-                    .chain()
-                    .run_if(in_state(GameStates::Playing))
-                    .run_if(in_state(MenuStates::Disable))
-                    .in_set(NarrowPhaseSet::Update),
-            )
-            .add_systems(OnExit(MenuStates::Disable), pause_physics)
-            .add_systems(OnEnter(MenuStates::Disable), resume_physics)
-            .add_systems(
-                PhysicsSchedule,
-                kinematic_controller_collisions.in_set(NarrowPhaseSet::Last),
-            );
+                .chain()
+                .run_if(in_state(GameStates::Playing))
+                .run_if(in_state(MenuStates::Disable)),
+        )
+        // physic update
+        .add_systems(
+            PhysicsSchedule,
+            collide_ball
+                .chain()
+                .run_if(in_state(GameStates::Playing))
+                .run_if(in_state(MenuStates::Disable))
+                .in_set(NarrowPhaseSet::Update),
+        )
+        .add_systems(OnExit(MenuStates::Disable), pause_physics)
+        .add_systems(OnEnter(MenuStates::Disable), resume_physics)
+        .add_systems(
+            PhysicsSchedule,
+            kinematic_controller_collisions.in_set(NarrowPhaseSet::Last),
+        );
     }
 }
 

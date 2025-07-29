@@ -1,8 +1,8 @@
-use std::time::Duration;
-use bevy_tweening::lens::TransformScaleLens;
-use bevy_tweening::{Animator, Tween, TweenCompleted};
 use crate::effects::explosion::get_explosion_bundle;
 use crate::prelude::*;
+use bevy_tweening::lens::TransformScaleLens;
+use bevy_tweening::{Animator, Tween, TweenCompleted};
+use std::time::Duration;
 
 const END_ANIMATION: u64 = 8;
 
@@ -43,11 +43,24 @@ fn get_ball(ball: Handle<Image>) -> impl Bundle {
     )
 }
 
-pub fn ball_reset_check(mut commands: Commands,effects: Res<EffectAssets>, mut query: Query<(Entity, &mut LinearVelocity, &mut Animator<Transform>, &Transform), (With<Ball>, Without<InTweening>)>, window: Single<&Window, With<PrimaryWindow>>) {
+pub fn ball_reset_check(
+    mut commands: Commands,
+    effects: Res<EffectAssets>,
+    mut query: Query<
+        (
+            Entity,
+            &mut LinearVelocity,
+            &mut Animator<Transform>,
+            &Transform,
+        ),
+        (With<Ball>, Without<InTweening>),
+    >,
+    window: Single<&Window, With<PrimaryWindow>>,
+) {
     let width = window.width();
     let right_end = width / 2.0;
     let left_end = width / 2.0 - width;
-    if let Ok((entity,mut velocity, mut animator, ball_position)) = query.single_mut() {
+    if let Ok((entity, mut velocity, mut animator, ball_position)) = query.single_mut() {
         if ball_position.translation.x < left_end || ball_position.translation.x > right_end {
             let tween_scale = Tween::new(
                 // CubicOut | CubicInOut
@@ -57,7 +70,8 @@ pub fn ball_reset_check(mut commands: Commands,effects: Res<EffectAssets>, mut q
                     start: Vec3::ONE,
                     end: Vec3::splat(0.1),
                 },
-            ).with_completed_event(END_ANIMATION);
+            )
+            .with_completed_event(END_ANIMATION);
             info!("Start animation: ");
             // stop ball and start animation destroy
             velocity.0.x = 0.0;
@@ -65,7 +79,11 @@ pub fn ball_reset_check(mut commands: Commands,effects: Res<EffectAssets>, mut q
             let explosion = get_explosion_bundle(effects.explosion.clone());
             commands.spawn((
                 explosion,
-                Transform::from_xyz(ball_position.translation.x.clamp(left_end, right_end), ball_position.translation.y, 1.0),
+                Transform::from_xyz(
+                    ball_position.translation.x.clamp(left_end, right_end),
+                    ball_position.translation.y,
+                    1.0,
+                ),
             ));
             commands.entity(entity).insert(InTweening);
             animator.set_tweenable(tween_scale);
