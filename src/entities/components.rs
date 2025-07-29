@@ -3,7 +3,11 @@ use crate::prelude::*;
 #[derive(Component, Reflect, Default, Copy, Clone)]
 #[reflect(Component)]
 #[require(Save)]
-pub struct Player;
+pub enum Player {
+    #[default]
+    One,
+    Two,
+}
 
 #[derive(Component, Reflect, Default, Copy, Clone)]
 #[reflect(Component)]
@@ -40,9 +44,6 @@ pub enum TextureKind {
     Player,
     Enemy,
 }
-
-#[derive(Component, Reflect, Default, Copy, Clone)]
-pub struct PlayerInput;
 
 #[derive(Component, Reflect, Default, Copy, Clone)]
 pub struct UiInput;

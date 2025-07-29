@@ -16,7 +16,8 @@ impl Plugin for EntityPlugin {
             .register_type::<GameStates>()
             .register_type::<MenuStates>()
             .register_type::<SettingsStates>()
-            .register_type::<PlayerInput>()
+            .register_type::<InTweening>()
+            .register_type::<Wall>()
             .register_type::<UiInput>()
             .register_type::<GlobalInput>()
             .register_type::<PreviousMenuState>()
@@ -36,6 +37,7 @@ impl Plugin for EntityPlugin {
             .enable_state_scoped_entities::<SettingsStates>()
             // initial events
             .add_event::<SaveSettingEvent>()
+            .add_event::<MoveEvent>()
             .add_event::<SaveGameEvent>()
             .add_event::<LoadGameEvent>()
             // initial resources

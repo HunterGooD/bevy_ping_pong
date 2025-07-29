@@ -1,4 +1,5 @@
 use crate::game_plugins::ball::*;
+use crate::input::player::PlayerAction;
 use crate::prelude::*;
 pub struct PlayerPlugin;
 
@@ -26,7 +27,7 @@ impl Plugin for PlayerPlugin {
         // physic update
         .add_systems(
             PhysicsSchedule,
-            collide_ball
+            (collide_ball, collide_player_with_ball)
                 .chain()
                 .run_if(in_state(GameStates::Playing))
                 .run_if(in_state(MenuStates::Disable))
@@ -46,20 +47,33 @@ fn spawn_player(
     mut next_state: ResMut<NextState<GameStates>>,
     window: Single<&Window, With<PrimaryWindow>>,
 ) {
-    commands.spawn((
-        Name::new("player"),
-        PlayerVisual {
-            texture_kind: TextureKind::Player,
-            color: Color::WHITE,
-            size: Vec2::splat(256.0),
-        },
-        Transform::from_translation(Vec3::new(0., 0., 1.)),
-        Player,
-    ));
-
     let width = window.width();
     let height = window.height();
     info!("width {width}, height {height}");
+    let size = Vec2::new(32.0, 256.0);
+    commands.spawn((
+        Name::new("player one"),
+        PlayerVisual {
+            texture_kind: TextureKind::Player,
+            color: Color::WHITE,
+            size,
+        },
+        Transform::from_translation(Vec3::new(width / 2.0 - width + size.x, 0., 1.)),
+        Player::One,
+        PlayerAction::default_player_one(),
+    ));
+
+    commands.spawn((
+        Name::new("player two"),
+        PlayerVisual {
+            texture_kind: TextureKind::Player,
+            color: Color::WHITE,
+            size,
+        },
+        Transform::from_translation(Vec3::new(width / 2.0 - size.x, 0., 1.)),
+        Player::Two,
+        PlayerAction::default_player_two(),
+    ));
 
     // spawn box on screen
     commands.spawn((
@@ -80,25 +94,6 @@ fn spawn_player(
         Restitution::new(0.6),
         Wall,
     ));
-    // commands.spawn((
-    //     Name::new("right paddle"),
-    //     Collider::rectangle(10.0, height),
-    //     RigidBody::Static,
-    //     StateScoped(GameStates::Playing),
-    //     Transform::from_xyz(width / 2.0, 0.0, 1.0),
-    //     Restitution::new(0.6),
-    //     Wall,
-    // ));
-    // commands.spawn((
-    //     Name::new("left paddle"),
-    //     Collider::rectangle(10.0, height),
-    //     RigidBody::Static,
-    //     StateScoped(GameStates::Playing),
-    //     Transform::from_xyz(width / 2.0 - width, 0.0, 1.0),
-    //     Restitution::new(0.6),
-    //     Wall,
-    // ));
-    // todo: центрелизовать смену состояния к примеру во время игры будут спавнится и другие объекты нужно чтобы все процессы прошли после чего и следует сменить состояние
     next_state.set(GameStates::Playing);
 }
 
@@ -141,40 +136,38 @@ fn restore_sprites(
             MaxSlopeAngle(PI * 0.45), // TODO: default value
             RigidBody::Kinematic,
             CharacterController,
-            Collider::circle(visual.size.x / 2.0 - 10.0),
+            MaxLinearSpeed(700.0),
+            Collider::rectangle(visual.size.x, visual.size.y),
             StateScoped(GameStates::Playing),
         ));
     }
 }
 
-fn apply_movement_damping(mut query: Query<(&MovementDampingFactor, &mut LinearVelocity)>) {
+fn apply_movement_damping(
+    mut query: Query<(&MovementDampingFactor, &mut LinearVelocity), With<Player>>,
+) {
     for (damping_factor, mut linear_velocity) in &mut query {
-        // We could use `LinearDamping`, but we don't want to dampen movement along the Y axis
-        linear_velocity.x *= damping_factor.0;
         linear_velocity.y *= damping_factor.0;
     }
 }
 
 fn move_player(
     time: Res<Time>,
-    intent: Res<MovementIntent>,
-    mut controllers: Query<&mut LinearVelocity, With<Player>>,
+    mut move_event: EventReader<MoveEvent>,
+    mut controllers: Query<(&mut LinearVelocity, &MaxLinearSpeed), With<Player>>,
 ) {
-    for mut linear_velocity in &mut controllers {
-        if intent.0 == Vec2::ZERO {
-            linear_velocity.x = 0.0;
-            linear_velocity.y = 0.0;
-            return;
-        }
-        let delta_time = time.delta_secs_f64().adjust_precision();
-        let movement_acceleration = 4000.0;
-        linear_velocity.x += intent.0.x * movement_acceleration * delta_time;
-        linear_velocity.y += intent.0.y * movement_acceleration * delta_time;
-        let max_speed = 500.0;
-        if linear_velocity.length() > max_speed {
-            let normalize = linear_velocity.normalize() * max_speed;
-            linear_velocity.x = normalize.x;
-            linear_velocity.y = normalize.y;
+    for event in move_event.read() {
+        if let Ok((mut linear_velocity, max_speed)) = controllers.get_mut(event.entity) {
+            if event.move_intent == Vec2::ZERO {
+                linear_velocity.y = 0.0;
+                return;
+            }
+            let delta_time = time.delta_secs_f64().adjust_precision();
+            let acceleration = 4000.0;
+            let desired = event.move_intent.y * max_speed.0;
+            let delta = desired - linear_velocity.y;
+            linear_velocity.y += delta * acceleration * delta_time;
+            linear_velocity.y = linear_velocity.y.clamp(-max_speed.0, max_speed.0);
         }
     }
 }

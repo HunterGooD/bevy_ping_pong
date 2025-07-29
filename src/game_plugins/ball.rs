@@ -3,8 +3,10 @@ use crate::prelude::*;
 use bevy_tweening::lens::TransformScaleLens;
 use bevy_tweening::{Animator, Tween, TweenCompleted};
 use std::time::Duration;
+use rand::Rng;
 
-const END_ANIMATION: u64 = 8;
+const END_INITIAL_ANIMATION: u64 = 5;
+const END_ANIMATION: u64 = 6;
 
 pub fn spawn_ball(mut commands: Commands, textures: Res<TextureAssets>) {
     let ball = get_ball(textures.git_hub.clone());
@@ -20,7 +22,7 @@ fn get_ball(ball: Handle<Image>) -> impl Bundle {
             start: Vec3::splat(0.01),
             end: Vec3::ONE,
         },
-    );
+    ).with_completed_event(END_INITIAL_ANIMATION);
     (
         Name::new("ball"),
         Ball,
@@ -29,7 +31,7 @@ fn get_ball(ball: Handle<Image>) -> impl Bundle {
             custom_size: Some(Vec2::splat(100.0)),
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(400., 0., 0.1)),
+        Transform::from_translation(Vec3::new(0.0, 0.0, 0.1)),
         RigidBody::Dynamic,
         Collider::circle(50.),
         Restitution::new(1.0),
@@ -97,11 +99,23 @@ pub fn enable_interaction_after_initial_animation(
     mut reader: EventReader<TweenCompleted>,
 ) {
     for event in reader.read() {
-        if event.user_data == END_ANIMATION {
-            info!("Enabling interaction");
-            commands.entity(event.entity).despawn();
-            let ball = get_ball(textures.git_hub.clone());
-            commands.spawn(ball);
+        match event.user_data {
+            END_ANIMATION => {
+                info!("Enabling interaction");
+                commands.entity(event.entity).despawn();
+                let ball = get_ball(textures.git_hub.clone());
+                commands.spawn(ball);
+            }
+            END_INITIAL_ANIMATION => {
+                let mut rng = rand::thread_rng();
+                let angle: f32 = rng.gen_range(-45.0_f32.to_radians()..45.0_f32.to_radians());
+                let speed = 500.0; // желаемая начальная скорость
+
+                let vx = speed * angle.cos() * if rng.gen_bool(0.5) { 1.0 } else { -1.0 };
+                let vy = speed * angle.sin();
+                commands.entity(event.entity).insert(LinearVelocity(Vec2::new(vx, vy)),);
+            }
+            _ => (),
         }
     }
 }
@@ -112,23 +126,41 @@ pub fn collide_ball(
     wall_query: Query<Entity, With<Wall>>,
 ) {
     for CollisionStarted(collider1, collider2) in collision_events.read() {
-        info!("Collision started! {collider1:?} collide with {collider2:?}");
         let wall_hit = wall_query.contains(*collider1) || wall_query.contains(*collider2);
 
         if wall_hit {
             if let Ok((mut vel, &max_speed)) = ball_query.get_mut(*collider1) {
-                adjust_vel(&mut vel.0, max_speed.0);
+                adjust_vel(&mut vel.0, max_speed.0, 1.4);
             }
             if let Ok((mut vel, &max_speed)) = ball_query.get_mut(*collider2) {
-                adjust_vel(&mut vel.0, max_speed.0);
+                adjust_vel(&mut vel.0, max_speed.0, 1.4);
             }
         }
     }
 }
 
-fn adjust_vel(vel: &mut Vector, max_speed: f32) {
+pub fn collide_player_with_ball(
+    mut collision_events: EventReader<CollisionStarted>,
+    mut ball_query: Query<(&mut LinearVelocity, &MaxLinearSpeed), With<Ball>>,
+    wall_query: Query<Entity, With<Player>>,
+) {
+    for CollisionStarted(collider1, collider2) in collision_events.read() {
+        let wall_hit = wall_query.contains(*collider1) || wall_query.contains(*collider2);
+
+        if wall_hit {
+            if let Ok((mut vel, &max_speed)) = ball_query.get_mut(*collider1) {
+                adjust_vel(&mut vel.0, max_speed.0, 2.0);
+            }
+            if let Ok((mut vel, &max_speed)) = ball_query.get_mut(*collider2) {
+                adjust_vel(&mut vel.0, max_speed.0, 2.0);
+            }
+        }
+    }
+}
+
+fn adjust_vel(vel: &mut Vector, max_speed: f32, multiplayer_speed: f32) {
     let speed = vel.xy().length();
-    let new_speed = (speed * 2.0).min(max_speed);
+    let new_speed = (speed * multiplayer_speed).min(max_speed);
     let direction = vel.xy().normalize_or_zero();
     let velocity = direction.extend(0.0) * new_speed;
     vel.x = velocity.x;
