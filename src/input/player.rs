@@ -9,8 +9,7 @@ pub enum PlayerAction {
 }
 
 impl PlayerAction {
-    /// Define the default bindings to the input
-    fn default_input_map() -> InputMap<Self> {
+    pub fn default_player_one() -> InputMap<Self> {
         let mut input_map = InputMap::default();
 
         input_map.insert_dual_axis(Self::Move, GamepadStick::LEFT);
@@ -21,6 +20,18 @@ impl PlayerAction {
 
         input_map
     }
+
+    pub fn default_player_two() -> InputMap<Self> {
+        let mut input_map = InputMap::default();
+
+        input_map.insert_dual_axis(Self::Move, GamepadStick::LEFT);
+        input_map.insert(Self::UseItem, GamepadButton::North);
+
+        input_map.insert_dual_axis(Self::Move, VirtualDPad::arrow_keys());
+        input_map.insert(Self::UseItem, KeyCode::KeyM);
+
+        input_map
+    }
 }
 
 pub struct PlayerInputPlugin;
@@ -28,7 +39,6 @@ pub struct PlayerInputPlugin;
 impl Plugin for PlayerInputPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
-            .add_systems(Startup, setup_player_input)
             .add_systems(
                 Update,
                 player_input_intent
@@ -38,23 +48,18 @@ impl Plugin for PlayerInputPlugin {
     }
 }
 
-fn setup_player_input(mut commands: Commands) {
-    commands.spawn((
-        Name::new("player input"),
-        PlayerInput,
-        PlayerAction::default_input_map(),
-    ));
-}
-
 fn player_input_intent(
-    mut movement_intent: ResMut<MovementIntent>,
-    query: Query<&ActionState<PlayerAction>, With<PlayerInput>>,
+    mut move_event: EventWriter<MoveEvent>,
+    query: Query<(Entity, &ActionState<PlayerAction>), With<Player>>,
 ) {
-    let action_state = query.single().expect("Player actions not found");
-    let axis = action_state.clamped_axis_pair(&PlayerAction::Move).xy();
-    movement_intent.0 = axis;
-
-    if action_state.just_pressed(&PlayerAction::UseItem) {
-        println!("Used an Item!");
+    for (entity, action_state) in query.iter() {
+        let axis = action_state.clamped_axis_pair(&PlayerAction::Move).xy();
+        move_event.write(MoveEvent {
+            entity,
+            move_intent: axis,
+        });
+        if action_state.just_pressed(&PlayerAction::UseItem) {
+            println!("Used an Item!");
+        }
     }
 }

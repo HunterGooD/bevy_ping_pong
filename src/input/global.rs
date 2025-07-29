@@ -43,14 +43,12 @@ fn setup_ui_input(mut commands: Commands) {
 
 fn process_global_input(
     state: Res<State<MenuStates>>,
-    mut movement_intent: ResMut<MovementIntent>,
     mut next_state: ResMut<NextState<MenuStates>>,
     query: Query<&ActionState<GlobalAction>, With<GlobalInput>>,
 ) {
     let action_state = query.single().expect("Global actions not found");
 
     if action_state.just_pressed(&GlobalAction::Pause) && state.get() == &MenuStates::Disable {
-        movement_intent.0 = Vec2::ZERO;
         next_state.set(MenuStates::PauseMenu)
     }
 }
