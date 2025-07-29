@@ -11,6 +11,10 @@ pub struct Ball;
 
 #[derive(Component, Reflect, Default, Copy, Clone)]
 #[reflect(Component)]
+pub struct InTweening;
+
+#[derive(Component, Reflect, Default, Copy, Clone)]
+#[reflect(Component)]
 pub struct Wall;
 
 #[derive(Component, Reflect, Default, Copy, Clone)]

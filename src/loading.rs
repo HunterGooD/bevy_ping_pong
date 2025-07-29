@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use bevy_asset_loader::prelude::*;
+use bevy_enoki::Particle2dEffect;
 use bevy_kira_audio::AudioSource;
 
 pub struct LoadingPlugin;
@@ -9,12 +10,12 @@ pub struct LoadingPlugin;
 /// If interested, take a look at <https://bevy-cheatbook.github.io/features/assets.html>
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ClearColor(Color::srgb(0.157, 0.157, 0.157)))
-            .add_systems(OnExit(GameStates::Loading), to_main_menu) // maybe there is another solution for this
+        app.add_systems(OnExit(GameStates::Loading), to_main_menu) // maybe there is another solution for this
             .add_loading_state(
                 LoadingState::new(GameStates::Loading)
                     .continue_to_state(GameStates::Menu)
                     .load_collection::<AudioAssets>()
+                    .load_collection::<EffectAssets>()
                     .load_collection::<TextureAssets>(),
             );
     }
@@ -36,6 +37,12 @@ pub struct TextureAssets {
 
     #[asset(path = "textures/github.png")]
     pub git_hub: Handle<Image>,
+}
+
+#[derive(AssetCollection, Resource, Reflect)]
+pub struct EffectAssets {
+    #[asset(path = "effects/explosion.ron")]
+    pub explosion: Handle<Particle2dEffect>,
 }
 
 fn to_main_menu(mut next_menu_state: ResMut<NextState<MenuStates>>) {

@@ -22,7 +22,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Gravity(Vector::ZERO)).add_plugins((
+        app.insert_resource(ClearColor(CLEAR_BACKGROUND_COLOR)).insert_resource(Gravity(Vector::ZERO)).add_plugins((
             EntityPlugin,
             LoadingPlugin,
             PhysicsPlugins::default().with_length_unit(20.0),

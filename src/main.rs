@@ -13,7 +13,7 @@ use winit::window::Icon;
 fn main() {
     let mut app = App::new();
 
-    app.insert_resource(ClearColor(Color::linear_rgb(0.4, 0.4, 0.4)))
+    app
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {

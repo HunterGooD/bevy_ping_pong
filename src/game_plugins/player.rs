@@ -10,7 +10,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(OnExit(GameStates::LoadingGame), restore_sprites)
             .add_systems(
                 Update,
-                (move_player, apply_movement_damping, collide_ball)
+                (move_player, apply_movement_damping, ball_reset_check, enable_interaction_after_initial_animation)
                     .chain()
                     .run_if(in_state(GameStates::Playing))
                     .run_if(in_state(MenuStates::Disable)),
@@ -72,24 +72,24 @@ fn spawn_player(
         Restitution::new(0.6),
         Wall,
     ));
-    commands.spawn((
-        Name::new("right paddle"),
-        Collider::rectangle(10.0, height),
-        RigidBody::Static,
-        StateScoped(GameStates::Playing),
-        Transform::from_xyz(width / 2.0, 0.0, 1.0),
-        Restitution::new(0.6),
-        Wall,
-    ));
-    commands.spawn((
-        Name::new("left paddle"),
-        Collider::rectangle(10.0, height),
-        RigidBody::Static,
-        StateScoped(GameStates::Playing),
-        Transform::from_xyz(width / 2.0 - width, 0.0, 1.0),
-        Restitution::new(0.6),
-        Wall,
-    ));
+    // commands.spawn((
+    //     Name::new("right paddle"),
+    //     Collider::rectangle(10.0, height),
+    //     RigidBody::Static,
+    //     StateScoped(GameStates::Playing),
+    //     Transform::from_xyz(width / 2.0, 0.0, 1.0),
+    //     Restitution::new(0.6),
+    //     Wall,
+    // ));
+    // commands.spawn((
+    //     Name::new("left paddle"),
+    //     Collider::rectangle(10.0, height),
+    //     RigidBody::Static,
+    //     StateScoped(GameStates::Playing),
+    //     Transform::from_xyz(width / 2.0 - width, 0.0, 1.0),
+    //     Restitution::new(0.6),
+    //     Wall,
+    // ));
     // todo: центрелизовать смену состояния к примеру во время игры будут спавнится и другие объекты нужно чтобы все процессы прошли после чего и следует сменить состояние
     next_state.set(GameStates::Playing);
 }
