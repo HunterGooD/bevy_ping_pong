@@ -9,19 +9,6 @@ pub enum PlayerAction {
 }
 
 impl PlayerAction {
-    /// Define the default bindings to the input
-    pub fn default_input_map() -> InputMap<Self> {
-        let mut input_map = InputMap::default();
-
-        input_map.insert_dual_axis(Self::Move, GamepadStick::LEFT);
-        input_map.insert(Self::UseItem, GamepadButton::North);
-
-        input_map.insert_dual_axis(Self::Move, VirtualDPad::wasd());
-        input_map.insert(Self::UseItem, KeyCode::KeyE);
-
-        input_map
-    }
-
     pub fn default_player_one() -> InputMap<Self> {
         let mut input_map = InputMap::default();
 
@@ -45,7 +32,6 @@ impl PlayerAction {
 
         input_map
     }
-
 }
 
 pub struct PlayerInputPlugin;
@@ -68,7 +54,7 @@ fn player_input_intent(
 ) {
     for (entity, action_state) in query.iter() {
         let axis = action_state.clamped_axis_pair(&PlayerAction::Move).xy();
-        move_event.write(MoveEvent{
+        move_event.write(MoveEvent {
             entity,
             move_intent: axis,
         });

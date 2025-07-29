@@ -49,7 +49,6 @@ fn process_global_input(
     let action_state = query.single().expect("Global actions not found");
 
     if action_state.just_pressed(&GlobalAction::Pause) && state.get() == &MenuStates::Disable {
-
         next_state.set(MenuStates::PauseMenu)
     }
 }

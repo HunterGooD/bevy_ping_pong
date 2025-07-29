@@ -2,8 +2,8 @@ use crate::effects::explosion::get_explosion_bundle;
 use crate::prelude::*;
 use bevy_tweening::lens::TransformScaleLens;
 use bevy_tweening::{Animator, Tween, TweenCompleted};
-use std::time::Duration;
 use rand::Rng;
+use std::time::Duration;
 
 const END_INITIAL_ANIMATION: u64 = 5;
 const END_ANIMATION: u64 = 6;
@@ -22,7 +22,8 @@ fn get_ball(ball: Handle<Image>) -> impl Bundle {
             start: Vec3::splat(0.01),
             end: Vec3::ONE,
         },
-    ).with_completed_event(END_INITIAL_ANIMATION);
+    )
+    .with_completed_event(END_INITIAL_ANIMATION);
     (
         Name::new("ball"),
         Ball,
@@ -113,7 +114,9 @@ pub fn enable_interaction_after_initial_animation(
 
                 let vx = speed * angle.cos() * if rng.gen_bool(0.5) { 1.0 } else { -1.0 };
                 let vy = speed * angle.sin();
-                commands.entity(event.entity).insert(LinearVelocity(Vec2::new(vx, vy)),);
+                commands
+                    .entity(event.entity)
+                    .insert(LinearVelocity(Vec2::new(vx, vy)));
             }
             _ => (),
         }
