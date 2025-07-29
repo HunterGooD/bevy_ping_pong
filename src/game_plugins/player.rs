@@ -1,26 +1,43 @@
-use crate::prelude::*;
 use crate::game_plugins::ball::*;
+use crate::prelude::*;
 pub struct PlayerPlugin;
 
 /// This plugin handles player related stuff like movement
 /// Player logic is only active during the State `GameState::Playing`
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameStates::LoadingGame), (spawn_ball, spawn_player).chain())
-            .add_systems(OnExit(GameStates::LoadingGame), restore_sprites)
-            .add_systems(
-                Update,
-                (move_player, apply_movement_damping)
-                    .chain()
-                    .run_if(in_state(GameStates::Playing))
-                    .run_if(in_state(MenuStates::Disable)),
+        app.add_systems(
+            OnEnter(GameStates::LoadingGame),
+            (spawn_ball, spawn_player).chain(),
+        )
+        .add_systems(OnExit(GameStates::LoadingGame), restore_sprites)
+        .add_systems(
+            Update,
+            (
+                move_player,
+                apply_movement_damping,
+                ball_reset_check,
+                enable_interaction_after_initial_animation,
             )
-            .add_systems(OnExit(MenuStates::Disable), pause_physics)
-            .add_systems(OnEnter(MenuStates::Disable), resume_physics)
-            .add_systems(
-                PhysicsSchedule,
-                kinematic_controller_collisions.in_set(NarrowPhaseSet::Last),
-            );
+                .chain()
+                .run_if(in_state(GameStates::Playing))
+                .run_if(in_state(MenuStates::Disable)),
+        )
+        // physic update
+        .add_systems(
+            PhysicsSchedule,
+            collide_ball
+                .chain()
+                .run_if(in_state(GameStates::Playing))
+                .run_if(in_state(MenuStates::Disable))
+                .in_set(NarrowPhaseSet::Update),
+        )
+        .add_systems(OnExit(MenuStates::Disable), pause_physics)
+        .add_systems(OnEnter(MenuStates::Disable), resume_physics)
+        .add_systems(
+            PhysicsSchedule,
+            kinematic_controller_collisions.in_set(NarrowPhaseSet::Last),
+        );
     }
 }
 
@@ -52,6 +69,7 @@ fn spawn_player(
         StateScoped(GameStates::Playing),
         Transform::from_xyz(0.0, height / 2.0, 1.0),
         Restitution::new(0.6),
+        Wall,
     ));
     commands.spawn((
         Name::new("down paddle"),
@@ -60,23 +78,26 @@ fn spawn_player(
         StateScoped(GameStates::Playing),
         Transform::from_xyz(0.0, height / 2.0 - height, 1.0),
         Restitution::new(0.6),
+        Wall,
     ));
-    commands.spawn((
-        Name::new("right paddle"),
-        Collider::rectangle(10.0, height),
-        RigidBody::Static,
-        StateScoped(GameStates::Playing),
-        Transform::from_xyz(width / 2.0, 0.0, 1.0),
-        Restitution::new(0.6),
-    ));
-    commands.spawn((
-        Name::new("left paddle"),
-        Collider::rectangle(10.0, height),
-        RigidBody::Static,
-        StateScoped(GameStates::Playing),
-        Transform::from_xyz(width / 2.0 - width, 0.0, 1.0),
-        Restitution::new(0.6),
-    ));
+    // commands.spawn((
+    //     Name::new("right paddle"),
+    //     Collider::rectangle(10.0, height),
+    //     RigidBody::Static,
+    //     StateScoped(GameStates::Playing),
+    //     Transform::from_xyz(width / 2.0, 0.0, 1.0),
+    //     Restitution::new(0.6),
+    //     Wall,
+    // ));
+    // commands.spawn((
+    //     Name::new("left paddle"),
+    //     Collider::rectangle(10.0, height),
+    //     RigidBody::Static,
+    //     StateScoped(GameStates::Playing),
+    //     Transform::from_xyz(width / 2.0 - width, 0.0, 1.0),
+    //     Restitution::new(0.6),
+    //     Wall,
+    // ));
     // todo: центрелизовать смену состояния к примеру во время игры будут спавнится и другие объекты нужно чтобы все процессы прошли после чего и следует сменить состояние
     next_state.set(GameStates::Playing);
 }
@@ -114,6 +135,7 @@ fn restore_sprites(
                 custom_size: Some(visual.size),
                 ..Default::default()
             },
+            Restitution::new(0.6),
             LockedAxes::ROTATION_LOCKED,
             MovementDampingFactor(0.9),
             MaxSlopeAngle(PI * 0.45), // TODO: default value

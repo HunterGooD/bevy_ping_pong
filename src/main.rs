@@ -13,30 +13,29 @@ use winit::window::Icon;
 fn main() {
     let mut app = App::new();
 
-    app.insert_resource(ClearColor(Color::linear_rgb(0.4, 0.4, 0.4)))
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Bevy Pong!!!".to_string(), // TODO: rename this
-                        resolution: (1280., 720.).into(),
-                        // Bind to canvas included in `index.html`
-                        canvas: Some("#bevy".to_owned()),
-                        fit_canvas_to_parent: true,
-                        resizable: false,
-                        // Tells wasm not to override default event handling, like F5 and Ctrl+R
-                        prevent_default_event_handling: false,
-                        ..default()
-                    }),
-                    ..default()
-                })
-                .set(AssetPlugin {
-                    meta_check: AssetMetaCheck::Never,
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Bevy Ping!!! Pong!!!".to_string(),
+                    resolution: (1280., 720.).into(),
+                    // Bind to canvas included in `index.html`
+                    canvas: Some("#bevy".to_owned()),
+                    fit_canvas_to_parent: true,
+                    resizable: false,
+                    // Tells wasm not to override default event handling, like F5 and Ctrl+R
+                    prevent_default_event_handling: false,
                     ..default()
                 }),
-        )
-        .add_plugins(GamePlugin)
-        .add_systems(Startup, set_window_icon);
+                ..default()
+            })
+            .set(AssetPlugin {
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            }),
+    )
+    .add_plugins(GamePlugin)
+    .add_systems(Startup, set_window_icon);
 
     #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(bevy_panic_handler::PanicHandler::new().build());

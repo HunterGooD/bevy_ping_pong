@@ -11,6 +11,7 @@ impl Plugin for TestFirstEffect {
 
 fn setup_effect(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
+        Name::new("Test Effect"),
         ParticleSpawner::default(),
         ParticleEffectHandle(asset_server.load("effects/test_effect.ron")),
     ));

@@ -6,6 +6,18 @@ use crate::prelude::*;
 pub struct Player;
 
 #[derive(Component, Reflect, Default, Copy, Clone)]
+#[reflect(Component)]
+pub struct Ball;
+
+#[derive(Component, Reflect, Default, Copy, Clone)]
+#[reflect(Component)]
+pub struct InTweening;
+
+#[derive(Component, Reflect, Default, Copy, Clone)]
+#[reflect(Component)]
+pub struct Wall;
+
+#[derive(Component, Reflect, Default, Copy, Clone)]
 pub struct MovementDampingFactor(pub Scalar);
 
 #[derive(Component, Reflect, Default, Copy, Clone)]
