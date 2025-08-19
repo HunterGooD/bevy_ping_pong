@@ -28,6 +28,10 @@ impl Plugin for EntityPlugin {
             .register_type::<MovementDampingFactor>()
             .register_type::<CharacterController>()
             .register_type::<MaxSlopeAngle>()
+            .register_type::<Scores>()
+            .register_type::<ScoreCounter>()
+            .register_type::<CountdownTimerText>()
+            .register_type::<CountdownTimer>()
             // initial states
             .init_state::<GameStates>()
             .enable_state_scoped_entities::<GameStates>()
@@ -40,9 +44,12 @@ impl Plugin for EntityPlugin {
             .add_event::<MoveEvent>()
             .add_event::<SaveGameEvent>()
             .add_event::<LoadGameEvent>()
+            .add_event::<SpeedBoostEvent>()
             // initial resources
             .insert_resource(PreviousMenuState(MenuStates::default()))
+            .insert_resource(CountdownTimer::new(60.0))
             .insert_resource(GlobalVolume(0.3))
-            .insert_resource(MovementIntent(Vec2::ZERO));
+            .insert_resource(MovementIntent(Vec2::ZERO))
+            .insert_resource(Scores::default());
     }
 }

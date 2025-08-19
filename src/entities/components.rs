@@ -22,6 +22,14 @@ pub struct InTweening;
 pub struct Wall;
 
 #[derive(Component, Reflect, Default, Copy, Clone)]
+#[reflect(Component)]
+pub struct ScoreCounter;
+
+#[derive(Component, Reflect, Default, Copy, Clone)]
+#[reflect(Component)]
+pub struct CountdownTimerText;
+
+#[derive(Component, Reflect, Default, Copy, Clone)]
 pub struct MovementDampingFactor(pub Scalar);
 
 #[derive(Component, Reflect, Default, Copy, Clone)]
