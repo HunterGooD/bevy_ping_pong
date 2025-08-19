@@ -1,0 +1,7 @@
+[
+  {
+    "label": "Run MyApp with Params",
+    "command": "cargo",
+    "args": ["run", "--features", "dev"]
+  }
+]

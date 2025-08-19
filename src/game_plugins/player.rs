@@ -16,6 +16,7 @@ impl Plugin for PlayerPlugin {
             Update,
             (
                 move_player,
+                boost_player,
                 apply_movement_damping,
                 ball_reset_check,
                 enable_interaction_after_initial_animation,
@@ -50,7 +51,7 @@ fn spawn_player(
     let width = window.width();
     let height = window.height();
     info!("width {width}, height {height}");
-    let size = Vec2::new(32.0, 256.0);
+    let size = Vec2::new(32.0, 160.0);
     commands.spawn((
         Name::new("player one"),
         PlayerVisual {
@@ -163,11 +164,22 @@ fn move_player(
                 return;
             }
             let delta_time = time.delta_secs_f64().adjust_precision();
-            let acceleration = 4000.0;
+            let acceleration = 5000.0;
             let desired = event.move_intent.y * max_speed.0;
             let delta = desired - linear_velocity.y;
             linear_velocity.y += delta * acceleration * delta_time;
             linear_velocity.y = linear_velocity.y.clamp(-max_speed.0, max_speed.0);
+        }
+    }
+}
+
+fn boost_player(
+    mut move_event: EventReader<SpeedBoostEvent>,
+    mut controllers: Query<&mut MaxLinearSpeed, With<Player>>,
+) {
+    for event in move_event.read() {
+        if let Ok(mut max_speed) = controllers.get_mut(event.entity) {
+            max_speed.0 += event.speed_boost;
         }
     }
 }

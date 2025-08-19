@@ -5,7 +5,7 @@ pub enum PlayerAction {
     // Movement
     #[actionlike(DualAxis)]
     Move,
-    UseItem,
+    SpeedBoost,
 }
 
 impl PlayerAction {
@@ -13,10 +13,10 @@ impl PlayerAction {
         let mut input_map = InputMap::default();
 
         input_map.insert_dual_axis(Self::Move, GamepadStick::LEFT);
-        input_map.insert(Self::UseItem, GamepadButton::North);
+        input_map.insert(Self::SpeedBoost, GamepadButton::North);
 
         input_map.insert_dual_axis(Self::Move, VirtualDPad::wasd());
-        input_map.insert(Self::UseItem, KeyCode::KeyE);
+        input_map.insert(Self::SpeedBoost, KeyCode::ShiftLeft);
 
         input_map
     }
@@ -25,10 +25,10 @@ impl PlayerAction {
         let mut input_map = InputMap::default();
 
         input_map.insert_dual_axis(Self::Move, GamepadStick::LEFT);
-        input_map.insert(Self::UseItem, GamepadButton::North);
+        input_map.insert(Self::SpeedBoost, GamepadButton::North);
 
         input_map.insert_dual_axis(Self::Move, VirtualDPad::arrow_keys());
-        input_map.insert(Self::UseItem, KeyCode::KeyM);
+        input_map.insert(Self::SpeedBoost, KeyCode::ShiftRight);
 
         input_map
     }
@@ -50,6 +50,7 @@ impl Plugin for PlayerInputPlugin {
 
 fn player_input_intent(
     mut move_event: EventWriter<MoveEvent>,
+    mut boost_event: EventWriter<SpeedBoostEvent>,
     query: Query<(Entity, &ActionState<PlayerAction>), With<Player>>,
 ) {
     for (entity, action_state) in query.iter() {
@@ -58,8 +59,17 @@ fn player_input_intent(
             entity,
             move_intent: axis,
         });
-        if action_state.just_pressed(&PlayerAction::UseItem) {
-            println!("Used an Item!");
+        if action_state.just_pressed(&PlayerAction::SpeedBoost) {
+            boost_event.write(SpeedBoostEvent {
+                entity,
+                speed_boost: 200.0,
+            });
+        }
+        if action_state.just_released(&PlayerAction::SpeedBoost) {
+            boost_event.write(SpeedBoostEvent {
+                entity,
+                speed_boost: -200.0,
+            });
         }
     }
 }

@@ -6,7 +6,7 @@ use rand::Rng;
 use std::time::Duration;
 
 const END_INITIAL_ANIMATION: u64 = 5;
-const END_ANIMATION: u64 = 6;
+const END_REMOVE_ANIMATION: u64 = 6;
 
 pub fn spawn_ball(mut commands: Commands, textures: Res<TextureAssets>) {
     let ball = get_ball(textures.git_hub.clone());
@@ -29,12 +29,12 @@ fn get_ball(ball: Handle<Image>) -> impl Bundle {
         Ball,
         Sprite {
             image: ball,
-            custom_size: Some(Vec2::splat(100.0)),
+            custom_size: Some(Vec2::splat(80.0)),
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(0.0, 0.0, 0.1)),
         RigidBody::Dynamic,
-        Collider::circle(50.),
+        Collider::circle(40.),
         Restitution::new(1.0),
         Friction::ZERO.with_combine_rule(CoefficientCombine::Min),
         SweptCcd::LINEAR,
@@ -48,6 +48,7 @@ fn get_ball(ball: Handle<Image>) -> impl Bundle {
 
 pub fn ball_reset_check(
     mut commands: Commands,
+    mut scores: ResMut<Scores>,
     effects: Res<EffectAssets>,
     mut query: Query<
         (
@@ -74,19 +75,21 @@ pub fn ball_reset_check(
                     end: Vec3::splat(0.1),
                 },
             )
-            .with_completed_event(END_ANIMATION);
+            .with_completed_event(END_REMOVE_ANIMATION);
             info!("Start animation: ");
             // stop ball and start animation destroy
             velocity.0.x = 0.0;
             velocity.0.y = 0.0;
             let explosion = get_explosion_bundle(effects.explosion.clone());
+            let x_pos = ball_position.translation.x.clamp(left_end, right_end);
+            if x_pos > 0.0 {
+                scores.left_score += 1;
+            } else {
+                scores.right_score += 1;
+            }
             commands.spawn((
                 explosion,
-                Transform::from_xyz(
-                    ball_position.translation.x.clamp(left_end, right_end),
-                    ball_position.translation.y,
-                    1.0,
-                ),
+                Transform::from_xyz(x_pos, ball_position.translation.y, 1.0),
             ));
             commands.entity(entity).insert(InTweening);
             animator.set_tweenable(tween_scale);
@@ -101,7 +104,7 @@ pub fn enable_interaction_after_initial_animation(
 ) {
     for event in reader.read() {
         match event.user_data {
-            END_ANIMATION => {
+            END_REMOVE_ANIMATION => {
                 info!("Enabling interaction");
                 commands.entity(event.entity).despawn();
                 let ball = get_ball(textures.git_hub.clone());
@@ -133,10 +136,10 @@ pub fn collide_ball(
 
         if wall_hit {
             if let Ok((mut vel, &max_speed)) = ball_query.get_mut(*collider1) {
-                adjust_vel(&mut vel.0, max_speed.0, 1.4);
+                adjust_vel(&mut vel.0, max_speed.0, 2.0);
             }
             if let Ok((mut vel, &max_speed)) = ball_query.get_mut(*collider2) {
-                adjust_vel(&mut vel.0, max_speed.0, 1.4);
+                adjust_vel(&mut vel.0, max_speed.0, 2.0);
             }
         }
     }
@@ -145,17 +148,17 @@ pub fn collide_ball(
 pub fn collide_player_with_ball(
     mut collision_events: EventReader<CollisionStarted>,
     mut ball_query: Query<(&mut LinearVelocity, &MaxLinearSpeed), With<Ball>>,
-    wall_query: Query<Entity, With<Player>>,
+    player_query: Query<Entity, With<Player>>,
 ) {
     for CollisionStarted(collider1, collider2) in collision_events.read() {
-        let wall_hit = wall_query.contains(*collider1) || wall_query.contains(*collider2);
+        let is_player_hit = player_query.contains(*collider1) || player_query.contains(*collider2);
 
-        if wall_hit {
+        if is_player_hit {
             if let Ok((mut vel, &max_speed)) = ball_query.get_mut(*collider1) {
-                adjust_vel(&mut vel.0, max_speed.0, 2.0);
+                adjust_vel(&mut vel.0, max_speed.0, 6.0);
             }
             if let Ok((mut vel, &max_speed)) = ball_query.get_mut(*collider2) {
-                adjust_vel(&mut vel.0, max_speed.0, 2.0);
+                adjust_vel(&mut vel.0, max_speed.0, 6.0);
             }
         }
     }
@@ -163,7 +166,7 @@ pub fn collide_player_with_ball(
 
 fn adjust_vel(vel: &mut Vector, max_speed: f32, multiplayer_speed: f32) {
     let speed = vel.xy().length();
-    let new_speed = (speed * multiplayer_speed).min(max_speed);
+    let new_speed = (speed * multiplayer_speed).clamp(-max_speed, max_speed);
     let direction = vel.xy().normalize_or_zero();
     let velocity = direction.extend(0.0) * new_speed;
     vel.x = velocity.x;

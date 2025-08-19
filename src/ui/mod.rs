@@ -1,10 +1,13 @@
 use crate::prelude::{ui::*, *};
+use crate::ui::score::{setup_score, update_score, update_timer, update_timer_text};
 use crate::ui::{menu::*, pause::*, settings::*};
 use bevy_kira_audio::prelude::*;
 
 pub mod components;
+mod game_over;
 pub mod menu;
 pub mod pause;
+pub mod score;
 pub mod settings;
 
 pub struct UIPlugin;
@@ -15,6 +18,12 @@ impl Plugin for UIPlugin {
             .add_systems(
                 Update,
                 button_processing.run_if(not(in_state(MenuStates::Disable))),
+            )
+            .add_systems(OnEnter(GameStates::Playing), setup_score)
+            .add_systems(
+                Update,
+                (update_score, update_timer, update_timer_text)
+                    .run_if(in_state(GameStates::Playing).and(in_state(MenuStates::Disable))),
             );
     }
 }
