@@ -1,10 +1,10 @@
 use crate::prelude::{ui::*, *};
 use crate::ui::score::{setup_score, update_score, update_timer, update_timer_text};
-use crate::ui::{menu::*, pause::*, settings::*};
+use crate::ui::{game_over::*, menu::*, pause::*, settings::*};
 use bevy_kira_audio::prelude::*;
 
 pub mod components;
-mod game_over;
+pub mod game_over;
 pub mod menu;
 pub mod pause;
 pub mod score;
@@ -14,7 +14,7 @@ pub struct UIPlugin;
 
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((PauseMenuPlugin, SettingsPlugin, MenuPlugin))
+        app.add_plugins((PauseMenuPlugin, SettingsPlugin, MenuPlugin, GameOverPlugin))
             .add_systems(
                 Update,
                 button_processing.run_if(not(in_state(MenuStates::Disable))),
@@ -81,7 +81,7 @@ fn button_processing(
                     save_game_event.write(SaveGameEvent);
                 }
                 ButtonLabel::Audio => settings_next_state.set(SettingsStates::Audio),
-                ButtonLabel::Controls => settings_next_state.set(SettingsStates::Controls),
+                ButtonLabel::Controls => settings_next_state.set(SettingsStates::Game),
                 ButtonLabel::Other => settings_next_state.set(SettingsStates::Other),
                 ButtonLabel::Back => {
                     next_state_menu.set(previous_state.0.clone());

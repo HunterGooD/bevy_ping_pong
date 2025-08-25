@@ -49,6 +49,7 @@ fn get_ball(ball: Handle<Image>) -> impl Bundle {
 pub fn ball_reset_check(
     mut commands: Commands,
     mut scores: ResMut<Scores>,
+    mut countdown_timer: ResMut<CountdownTimer>,
     effects: Res<EffectAssets>,
     mut query: Query<
         (
@@ -66,6 +67,7 @@ pub fn ball_reset_check(
     let left_end = width / 2.0 - width;
     if let Ok((entity, mut velocity, mut animator, ball_position)) = query.single_mut() {
         if ball_position.translation.x < left_end || ball_position.translation.x > right_end {
+            // перенести и вызывать по ивенту удаление шара
             let tween_scale = Tween::new(
                 // CubicOut | CubicInOut
                 EaseFunction::BounceIn,
@@ -87,6 +89,8 @@ pub fn ball_reset_check(
             } else {
                 scores.right_score += 1;
             }
+
+            countdown_timer.reset();
             commands.spawn((
                 explosion,
                 Transform::from_xyz(x_pos, ball_position.translation.y, 1.0),
@@ -123,6 +127,30 @@ pub fn enable_interaction_after_initial_animation(
             }
             _ => (),
         }
+    }
+}
+
+pub fn game_over_check(
+    mut next_state_menu: ResMut<NextState<MenuStates>>,
+    mut next_state: ResMut<NextState<GameStates>>,
+    scores: Res<Scores>,
+) {
+    if scores.right_score >= 5 {
+        // right player win
+        // TODO: change game over state
+        next_state_menu.set(MenuStates::GameOver);
+        next_state.set(GameStates::Menu);
+    } else if scores.left_score >= 5 {
+        // left player win
+        // TODO: change game over state
+        next_state_menu.set(MenuStates::GameOver);
+        next_state.set(GameStates::Menu);
+    }
+}
+
+pub fn applify_ball(mut ball_query: Query<(&mut LinearVelocity, &MaxLinearSpeed), With<Ball>>) {
+    if let Ok((mut vel, &max_speed)) = ball_query.single_mut() {
+        adjust_vel(&mut vel.0, max_speed.0, 1.01);
     }
 }
 

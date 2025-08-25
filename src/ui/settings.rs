@@ -10,7 +10,7 @@ impl Plugin for SettingsPlugin {
                 (
                     (audio_settings, update_global_volume_label)
                         .run_if(in_state(SettingsStates::Audio)),
-                    control_settings.run_if(in_state(SettingsStates::Controls)),
+                    control_settings.run_if(in_state(SettingsStates::Game)),
                     other_settings.run_if(in_state(SettingsStates::Other)),
                 )
                     .run_if(in_state(MenuStates::Setting)),
@@ -72,7 +72,7 @@ fn setup_settings(mut commands: Commands) {
                             width: Val::Percent(1.0),
                             ..default()
                         },
-                        small_button("Controls", ButtonLabel::Controls),
+                        small_button("Game", ButtonLabel::Controls),
                         Node {
                             width: Val::Percent(1.0),
                             ..default()
@@ -202,8 +202,8 @@ fn control_settings(
 
     let entity = menu.single().unwrap();
     commands.entity(entity).with_child((
-        label("Controls menu"),
-        StateScoped(SettingsStates::Controls),
+        label("game"),
+        StateScoped(SettingsStates::Game),
         ControlSetting,
     ));
 }

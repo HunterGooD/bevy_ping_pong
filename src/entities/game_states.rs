@@ -29,6 +29,6 @@ pub enum MenuStates {
 pub enum SettingsStates {
     #[default]
     Audio,
-    Controls,
+    Game,
     Other,
 }

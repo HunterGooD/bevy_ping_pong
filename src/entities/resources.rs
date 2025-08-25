@@ -19,6 +19,13 @@ pub struct Scores {
     pub left_score: i32,
 }
 
+impl Scores {
+    pub fn clean_scores(&mut self) {
+        self.left_score = 0;
+        self.right_score = 0;
+    }
+}
+
 #[derive(Resource, Reflect, Debug, Default)]
 #[reflect(Resource)]
 pub struct CountdownTimer {
@@ -30,5 +37,9 @@ impl CountdownTimer {
         Self {
             timer: Timer::from_seconds(seconds, TimerMode::Once),
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.timer.reset();
     }
 }

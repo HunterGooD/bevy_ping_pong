@@ -20,6 +20,7 @@ impl Plugin for PlayerPlugin {
                 apply_movement_damping,
                 ball_reset_check,
                 enable_interaction_after_initial_animation,
+                game_over_check,
             )
                 .chain()
                 .run_if(in_state(GameStates::Playing))
@@ -28,7 +29,7 @@ impl Plugin for PlayerPlugin {
         // physic update
         .add_systems(
             PhysicsSchedule,
-            (collide_ball, collide_player_with_ball)
+            (collide_ball, collide_player_with_ball, applify_ball)
                 .chain()
                 .run_if(in_state(GameStates::Playing))
                 .run_if(in_state(MenuStates::Disable))
@@ -45,9 +46,15 @@ impl Plugin for PlayerPlugin {
 
 fn spawn_player(
     mut commands: Commands,
+    mut scores: ResMut<Scores>,
+    mut countdown_timer: ResMut<CountdownTimer>,
     mut next_state: ResMut<NextState<GameStates>>,
     window: Single<&Window, With<PrimaryWindow>>,
 ) {
+    // reset scores and countdown timer
+    scores.clean_scores();
+    countdown_timer.reset();
+
     let width = window.width();
     let height = window.height();
     info!("width {width}, height {height}");
